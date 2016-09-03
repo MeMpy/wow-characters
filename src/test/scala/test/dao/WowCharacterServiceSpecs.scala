@@ -64,6 +64,7 @@ class WowCharacterServiceSpecs extends Specification with ExecutionEnvironment w
   }
 }
 
+//TODO use context here can be cumbersome
 trait WowCharacterServiceContext extends Scope with BeforeAfter with LazyLogging{
   val service = Services.wowCharacterService
   val timeOut = 10 seconds

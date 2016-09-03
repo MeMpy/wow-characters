@@ -21,12 +21,14 @@ object CrawlerMocksUtil {
       val jsonBytes = UtilTest.readResource(jsonFileName)
       val body = HttpEntity(ContentTypes.`application/json`, jsonBytes)
       mockResponse.entity returns body
+      mockResponse
     }
 
-    def mockResponseWithGzip(gzipFileName: String) = {
+    def mockResponseWithGzip(gzipFileName: String):HttpResponse = {
       val gzipBytes = UtilTest.readResource(gzipFileName)
       val body = HttpEntity(ContentTypes.`application/octet-stream`, gzipBytes)
       mockResponse.entity returns body
+      mockResponse
     }
 
     val sendAndReceive = {

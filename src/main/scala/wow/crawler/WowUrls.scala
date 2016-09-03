@@ -17,4 +17,5 @@ object WowUrls {
   val character = config.getString("api.blizzard.wow.characterBase")
   val guildMembers = config.getString("api.blizzard.wow.guildMembers")
   val wowProgressMaghteridon = config.getString("api.wowProgressGuild")
+  val realmPopMaghteridon = config.getString("api.realmPop")
 }
