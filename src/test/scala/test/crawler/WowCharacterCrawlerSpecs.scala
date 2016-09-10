@@ -27,7 +27,7 @@ class WowCharacterCrawlerSpecs extends Specification with Mockito{
       mockResponseWithGzip("eu_magtheridon_tier18.json.gz")
     )
   }
-  wowGuildApiMock.getGuildMembers(org.mockito.Matchers.anyString()) returns {
+  wowGuildApiMock.getGuildWithMembers(org.mockito.Matchers.anyString()) returns {
     val guildJson = UtilTest.readResourceAsString("WowGuildMembers.json")
     Future(guildJson.parseJson.convertTo[WowGuild])
   }
@@ -48,9 +48,4 @@ class WowCharacterCrawlerSpecs extends Specification with Mockito{
 
     }
   }
-
-
-
-
-
 }

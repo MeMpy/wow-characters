@@ -24,6 +24,7 @@ trait GuildInfo {
 }
 case class WowProgressGuildInfo(name:String) extends GuildInfo
 case class RealmPopGuildInfo(guild:String, membercount:Int) extends GuildInfo
+
 object GuildInfoProtocol extends DefaultJsonProtocol {
   implicit val wowProgressGuildInfoFormat = jsonFormat1(WowProgressGuildInfo)
   implicit val realmPopGuildInfo = jsonFormat2(RealmPopGuildInfo)

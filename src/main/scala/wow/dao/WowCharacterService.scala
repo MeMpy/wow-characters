@@ -31,7 +31,7 @@ class WowCharacterServiceImpl(wowCharacterCollection:Future[BSONCollection]) ext
     result onComplete {
       case Failure(e) => logger.debug(e.getMessage)
       case Success(writeResult) => {
-        logger.info(s"successfully inserted document: $writeResult")
+        logger.info(s"successfully inserted charachter: $writeResult")
       }
     }
     result.map(pg -> _)

@@ -42,7 +42,7 @@ class WowCharacterServiceSpecs extends Specification with ExecutionEnvironment w
 
     "Insert if exsist should update" in new WowCharacterServiceContext {
 
-      implicit val personReader: BSONDocumentReader[WowCharacter] = Macros.reader[WowCharacter]
+      implicit val reader: BSONDocumentReader[WowCharacter] = Macros.reader[WowCharacter]
       val pg = WowCharacter("Test2", 1, 1)
       val pg2 = WowCharacter("Test2", 0, 0)
 
