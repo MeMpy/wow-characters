@@ -1,0 +1,19 @@
+{
+  "lastModified": 1472903174000,
+  "name": "Heptagram",
+  "realm": "Magtheridon",
+  "battlegroup": "Cruelty / Crueldad",
+  "level": 25,
+  "side": 1,
+  "achievementPoints": 2195,
+  "emblem": {
+    "icon": 173,
+    "iconColor": "ffb1b8b1",
+    "iconColorId": 14,
+    "border": 3,
+    "borderColor": "ffffffff",
+    "borderColorId": 14,
+    "backgroundColor": "ff8e9700",
+    "backgroundColorId": 17
+  }
+}

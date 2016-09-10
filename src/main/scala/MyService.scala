@@ -38,6 +38,7 @@ trait MyService extends HttpService with LazyLogging {
   val getWowCharacter:WowCharacterApi = WowCharacterApiImpl
   val getWowGuild:WowGuildApi = WowGuildApiImpl
 
+
   val myRoute =
     path("") {
       get {
@@ -88,8 +89,10 @@ trait MyService extends HttpService with LazyLogging {
   val wowProgressGuild =
     path("wowprogress") {
       get {
-        val wowCharacterCrawler = new WowCharacterCrawler()
-        onComplete(wowCharacterCrawler.crawlWowCharacterFromWowProgressGuildList()) {
+//        val wowCharacterCrawler = new WowCharacterCrawler()
+//        onComplete(wowCharacterCrawler.crawlWowCharacterFromWowProgressGuildList()) {
+        val wowGuildCrawler = new WowGuildCrawler()
+        onComplete(wowGuildCrawler.crawlWowGuildFromWowProgressGuildList()) {
           case Success(wowGuilds) => complete(wowGuilds mkString "/")
           case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
         }
@@ -99,8 +102,10 @@ trait MyService extends HttpService with LazyLogging {
   val wowRealmPop =
     path("realmpop") {
       get {
-        val wowCharacterCrawler = new WowCharacterCrawler()
-        onComplete(wowCharacterCrawler.crawlWowCharacterFromRealmPopGuildList()) {
+//        val wowCharacterCrawler = new WowCharacterCrawler()
+//        onComplete(wowCharacterCrawler.crawlWowCharacterFromRealmPopGuildList()) {
+        val wowGuildCrawler = new WowGuildCrawler()
+        onComplete(wowGuildCrawler.crawlWowGuildFromRealmPopGuildList()) {
           case Success(wowGuilds) => complete(wowGuilds.size.toString())
           case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
         }

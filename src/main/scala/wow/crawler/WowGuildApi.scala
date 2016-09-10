@@ -39,12 +39,20 @@ trait WowGuildApi extends SendReceiveClient with LazyLogging{
     getGuildInfoFrom(WowUrls.realmPopMaghteridon)
   }
 
-  //TODO change name to getGuildWithMembers
+  //TODO delete
   def getGuildMembers(guildName: String):Future[WowGuild] = {
     val pipeline = sendAndReceive ~> unmarshal[WowGuild]
     val encodedGuildName = WowUrls.encodeParam(guildName)
     pipeline {
       Get(WowUrls.guildMembers.format(encodedGuildName))
+    }
+  }
+
+  def getGuild(guildName: String):Future[WowGuild] = {
+    val pipeline = sendAndReceive ~> unmarshal[WowGuild]
+    val encodedGuildName = WowUrls.encodeParam(guildName)
+    pipeline {
+      Get(WowUrls.guilds.format(encodedGuildName))
     }
   }
 
@@ -79,7 +87,7 @@ class GuildStreamerActor extends Actor with LazyLogging{
     }
     case x:HttpResponse  => {
       logger.debug("Normal response")
-      //outsideSender ! x.entity.asString
+      outsideSender ! x.entity.asString
     }
 //    case x:ChunkedResponseStart =>
 //      logger.info("start"+ x.response.entity.asString)
