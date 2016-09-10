@@ -3,7 +3,7 @@ package wow.dao
 import com.typesafe.scalalogging.LazyLogging
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.commands.UpdateWriteResult
-import reactivemongo.bson.{BSONDocument, BSONDocumentWriter}
+import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 import wow.dto.WowGuild
 
 import scala.concurrent.Future
@@ -15,6 +15,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 trait WowGuildService {
   def insert(guild: WowGuild): Future[(WowGuild,UpdateWriteResult)]
+
+  def getAll():Future[List[WowGuild]]
 }
 
 
@@ -25,6 +27,18 @@ class WowGuildServiceImpl(wowGuildCollection:Future[BSONCollection]) extends Wow
     override def write(t: WowGuild): BSONDocument =
       BSONDocument("name" -> t.name)
   }
+
+  implicit object reader extends BSONDocumentReader[WowGuild] {
+    def read(bson: BSONDocument): WowGuild =
+      new WowGuild(bson.getAs[String]("name").get, None)
+  }
+
+  override def getAll(): Future[List[WowGuild]] =
+    Collections.wowGuildCollection flatMap { collection =>
+      collection.find(BSONDocument())
+        .cursor[WowGuild]()
+        .collect[List]()
+    }
 
   def insert(guild: WowGuild): Future[(WowGuild, UpdateWriteResult)] = {
     val guildSelector = BSONDocument("name" -> guild.name)

@@ -6,7 +6,7 @@ import java.util.zip.GZIPInputStream
 import reactivemongo.api.commands.UpdateWriteResult
 import spray.http.HttpResponse
 import spray.json._
-import wow.dao.{Services, WowCharacterService}
+import wow.dao.{Services, WowCharacterService, WowGuildService}
 import wow.dto._
 import wow.dto.GuildInfoProtocol._
 
@@ -20,41 +20,13 @@ import scala.util.{Failure, Success, Try}
   */
 class WowCharacterCrawler(getWowCharacter: WowCharacterApi = WowCharacterApiImpl,
                           getWowGuild: WowGuildApi = WowGuildApiImpl,
-                          wowCharacterService: WowCharacterService = Services.wowCharacterService) {
+                          wowCharacterService: WowCharacterService = Services.wowCharacterService,
+                          wowGuildService:WowGuildService = Services.wowGuildService) {
 
-  def crawlWowCharacterFromWowProgressGuildList():Future[List[(WowCharacter, UpdateWriteResult)]] = {
-    val futureResponseFromWowProgress:Future[HttpResponse] = getWowGuild.getGuildInfoFromWowProgress()
+  def crawlWowCharacterFromGuilds(): Future[List[(WowCharacter, UpdateWriteResult)]] = {
+    wowGuildService.getAll() flatMap { guilds =>
 
-    val futureWowGuild = futureResponseFromWowProgress map { response =>
-      val output: String = readGzipResponseAsString(response)
-      output.parseJson.convertTo[List[WowProgressGuildInfo]]
-    }
-    crawlWowCharacterFrom(futureWowGuild)
-  }
-
-  def crawlWowCharacterFromRealmPopGuildList():Future[List[(WowCharacter, UpdateWriteResult)]] = {
-    val futureResponseFromRealmPop:Future[HttpResponse] = getWowGuild.getGuildInfoFromRealmPop()
-
-    val futureWowGuild = futureResponseFromRealmPop map { response =>
-      val output: String = readResponseAsString(response)
-      val guildJson = output.substring(output.indexOf("\"guilds\":"))
-
-      val hordeG= guildJson.substring(guildJson.indexOf("["), guildJson.indexOf("]")+1)
-      val indexOfFirstBraket = guildJson.indexOf("\"Alliance\":[")+11
-      val allianceG = guildJson.substring(indexOfFirstBraket, guildJson.indexOf("]",indexOfFirstBraket)+1)
-
-      val hordeGuilds:List[RealmPopGuildInfo] = hordeG.parseJson.convertTo[List[RealmPopGuildInfo]]
-      val allianceGuilds:List[RealmPopGuildInfo] = allianceG.parseJson.convertTo[List[RealmPopGuildInfo]]
-
-      hordeGuilds ++ allianceGuilds
-    }
-    crawlWowCharacterFrom(futureWowGuild)
-  }
-
-  private def crawlWowCharacterFrom(futureWowGuilds: Future[List[GuildInfo]]): Future[List[(WowCharacter, UpdateWriteResult)]] = {
-    futureWowGuilds flatMap { guilds =>
-
-      val listOfFutures: List[Future[List[(WowCharacter, UpdateWriteResult)]]] = guilds.slice(0, 2) map { guild =>
+      val listOfFutures: List[Future[List[(WowCharacter, UpdateWriteResult)]]] = guilds map { guild =>
         val futureCharacters: Future[List[WowCharacter]] = extractCharactersFromGuild(guild)
 
         val futureDBWriting: Future[List[(WowCharacter, UpdateWriteResult)]] = futureCharacters flatMap { characters =>
@@ -73,39 +45,14 @@ class WowCharacterCrawler(getWowCharacter: WowCharacterApi = WowCharacterApiImpl
     }
   }
 
-  private def extractCharactersFromGuild(guild: GuildInfo): Future[List[WowCharacter]] = {
-//    val futureWowGuild = getWowGuild.getGuildMembers(guild.getName())
-    val futureWowGuild = getWowGuild.getGuildWithMembers(guild.getName())
+  private def extractCharactersFromGuild(guild: WowGuild): Future[List[WowCharacter]] = {
+    val futureWowGuild = getWowGuild.getGuildWithMembers(guild.name)
     val futureMembers:Future[List[WowCharacterLink]] = futureWowGuild.map(_.members.get)
 
     val futureCharacter = futureMembers.map(_.map(_.character))
     futureCharacter
   }
 
-  private def futureToFutureTry[T](f: Future[T]): Future[Try[T]] =
-    f.map(Success(_)).recover({case x => Failure(x)})
-
-  private def readResponseAsString(response: HttpResponse): String = {
-    val guildFile = new BufferedReader(
-      new InputStreamReader(
-          new ByteArrayInputStream(response.entity.data.toByteArray)
-      )
-    )
-    val output = guildFile.readLine()
-    guildFile.close()
-    output
-  }
-
-  private def readGzipResponseAsString(response: HttpResponse): String = {
-    val guildFile = new BufferedReader(
-      new InputStreamReader(
-        new GZIPInputStream(
-          new ByteArrayInputStream(response.entity.data.toByteArray)
-        )
-      )
-    )
-    val output = guildFile.readLine()
-    guildFile.close()
-    output
-  }
+//  private def futureToFutureTry[T](f: Future[T]): Future[Try[T]] =
+//    f.map(Success(_)).recover({case x => Failure(x)})
 }

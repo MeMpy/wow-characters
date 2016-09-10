@@ -29,35 +29,20 @@ class WowGuildServiceSpecs extends Specification with ExecutionEnvironment with 
       val guild = WowGuild("Test", None)
       service.insert(guild)
 
-      val size = Collections.wowGuildCollection flatMap { collection =>
-        collection.find(BSONDocument())
-          .cursor()
-          .collect[List]() map (_.size)
-      }
+      val size = service.getAll().map(_.size)
 
       size must be_==(1).awaitFor(timeOut)
     }
 
     "Insert if exsist should update" in new WowGuildServiceContext {
 
-//      implicit val reader: BSONDocumentReader[WowGuild] = Macros.reader[WowGuild]
-//      implicit val readerLink: BSONDocumentReader[WowCharacterLink] = Macros.reader[WowCharacterLink]
-//      implicit val readerChar: BSONDocumentReader[WowCharacter] = Macros.reader[WowCharacter]
-      implicit object reader extends BSONDocumentReader[WowGuild] {
-        def read(bson: BSONDocument): WowGuild =
-          new WowGuild(bson.getAs[String]("name").get, None)
-      }
       val guild = WowGuild("Test2", None)
       val guild2 = WowGuild("Test2", None)
 
       Await.result(service.insert(guild), timeOut)
       Await.result(service.insert(guild2), timeOut)
 
-      val result = Collections.wowGuildCollection flatMap { collection =>
-        collection.find(BSONDocument())
-          .cursor[WowGuild]()
-          .collect[List]()
-      }
+      val result = service.getAll()
 
       result onSuccess{
         case r => logger.debug(r.head.toString)

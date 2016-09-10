@@ -28,7 +28,7 @@ class MyServiceActor extends Actor with MyService {
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
   // or timeout handling
-  def receive = runRoute(myRoute ~ wowAuctionRoute ~ wowProgressGuild ~ wowGuildRoute ~ wowRealmPop)
+  def receive = runRoute(myRoute ~ wowAuctionRoute ~ wowProgressGuild ~ wowGuildRoute ~ wowRealmPop ~ wowCharacters)
 }
 
 
@@ -119,6 +119,17 @@ trait MyService extends HttpService with LazyLogging {
           case Success(guild) => {
             complete(guild.toString)
           }
+          case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+        }
+      }
+    }
+
+  val wowCharacters =
+    path("wowCharacters") {
+      get {
+        val wowCharacterCrawler = new WowCharacterCrawler()
+        onComplete(wowCharacterCrawler.crawlWowCharacterFromGuilds()) {
+          case Success(_) => complete("Done!")
           case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
         }
       }
