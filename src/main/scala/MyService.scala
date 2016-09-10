@@ -27,7 +27,7 @@ class MyServiceActor extends Actor with MyService {
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
   // or timeout handling
-  def receive = runRoute(myRoute ~ wowAuctionRoute ~ wowProgressGuild ~ wowGuildRoute)
+  def receive = runRoute(myRoute ~ wowAuctionRoute ~ wowProgressGuild ~ wowGuildRoute ~ wowRealmPop)
 }
 
 
@@ -36,6 +36,7 @@ trait MyService extends HttpService with LazyLogging {
 
   val getWowCharacter:WowCharacterApi = WowCharacterApiImpl
   val getWowGuild:WowGuildApi = WowGuildApiImpl
+
 
   val myRoute =
     path("") {
@@ -87,9 +88,24 @@ trait MyService extends HttpService with LazyLogging {
   val wowProgressGuild =
     path("wowprogress") {
       get {
-        val wowCharacterCrawler = new WowCharacterCrawler()
-        onComplete(wowCharacterCrawler.crawlWowCharacterFromWowProgressGuildList()) {
+//        val wowCharacterCrawler = new WowCharacterCrawler()
+//        onComplete(wowCharacterCrawler.crawlWowCharacterFromWowProgressGuildList()) {
+        val wowGuildCrawler = new WowGuildCrawler()
+        onComplete(wowGuildCrawler.crawlWowGuildFromWowProgressGuildList()) {
           case Success(wowGuilds) => complete(wowGuilds mkString "/")
+          case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
+        }
+      }
+    }
+
+  val wowRealmPop =
+    path("realmpop") {
+      get {
+//        val wowCharacterCrawler = new WowCharacterCrawler()
+//        onComplete(wowCharacterCrawler.crawlWowCharacterFromRealmPopGuildList()) {
+        val wowGuildCrawler = new WowGuildCrawler()
+        onComplete(wowGuildCrawler.crawlWowGuildFromRealmPopGuildList()) {
+          case Success(wowGuilds) => complete(wowGuilds.size.toString())
           case Failure(ex) => complete(InternalServerError, s"An error occurred: ${ex.getMessage}")
         }
       }

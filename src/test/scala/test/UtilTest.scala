@@ -16,4 +16,10 @@ object UtilTest{
     Files.readAllBytes(resourcePath)
   }
 
+  def readResourceAsString(resourceName:String):String = {
+    val stream : InputStream = getClass.getResourceAsStream(testDataDefaultDir + resourceName)
+    val lines = scala.io.Source.fromInputStream( stream ).getLines
+    lines mkString
+  }
+
 }
